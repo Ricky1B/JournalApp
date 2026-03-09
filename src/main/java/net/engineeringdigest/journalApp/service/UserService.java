@@ -3,6 +3,8 @@ package net.engineeringdigest.journalApp.service;
 import net.engineeringdigest.journalApp.Entity.User;
 import net.engineeringdigest.journalApp.repository.UserRepository;
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +19,8 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private static final PasswordEncoder pwdEncoder= new BCryptPasswordEncoder();
 
@@ -33,9 +37,15 @@ public class UserService {
     }
 
     public User createNewUser(User user){
-        user.setPassword(pwdEncoder.encode(user.getPassword()));
-        user.setRoles(Arrays.asList("USER"));
-        return userRepository.save(user);
+        try{
+            user.setPassword(pwdEncoder.encode(user.getPassword()));
+            user.setRoles(Arrays.asList("USER"));
+            return userRepository.save(user);
+        }
+        catch(Exception e){
+            logger.error("User already exists");
+            return null;
+        }
     }
 
     public User createNewAdmin(User user){
